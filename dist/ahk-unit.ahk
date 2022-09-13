@@ -95,9 +95,39 @@ class AhkUnit
 			return true
 		}
 		
+		_isNumber(variable) {
+			if variable is number
+				return true
+			else
+				return false
+		}
+
+		_logError(condition, expected, actual) {
+			msg := format("{1}: {2}:`n    Actual:   {3}`n    Expected: {4}"
+				, this.describe, this.it, actual, expected)
+			this._log(condition, msg)
+		}
+
+		_logErrorString(condition, expected, actual) {
+			msg := format("{1}: {2}:`n    Actual:   ""{3}""`n    Expected: ""{4}"""
+				, this.describe, this.it, actual, expected)
+			this._log(condition, msg)
+		}
+
+		_logErrorMultiLine(condition, expected, actual) {
+			msg := format("{1}: {2}:`nActual/Expected:`n""{3}""`n`n""{4}"""
+				, this.describe, this.it, actual, expected)
+			this._log(condition, msg)
+		}
+
 		toBe(value) {
-			msg := % this.describe ": expected " value " and received " this.value
-			this._log(value == this.value, msg)
+			if (this._isNumber(this.value)) {
+				this._logError(value = this.value, value, this.value)
+			} else if (RegexMatch(this.value, "^.*\r?\n")) {
+				this._logErrorMultiLine(value == this.value, value, this.value)
+			} else {
+				this._logErrorString(value == this.value, value, this.value)
+			}
 			return this.it
 		}
 		
