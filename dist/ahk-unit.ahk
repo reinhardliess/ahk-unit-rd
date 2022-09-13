@@ -41,6 +41,9 @@ class AhkUnit
 			if (!this.errors.MaxIndex()) {
 				FileAppend, % this.describe " - All tests passed`n", *
 			}
+			if (this.errors.MaxIndex() && this.options.abortOnError) {
+				ExitApp, 1
+			}
 		}
 		
 		it(it1) {
