@@ -1,7 +1,11 @@
 class AhkUnit
 {
 	__New(options := "") {
-		this.options := options
+		this.options := IsObject(options) ? options : {}
+		this.options.indent := this.options.hasKey("indent")
+			? this.options.indent
+			: "  "
+		FileAppend, % "Class " this.__Class "`n", *
 		this._test()
 	}
 
@@ -35,11 +39,11 @@ class AhkUnit
 
 		__Delete() {
 			loop, % this.errors.MaxIndex() {
-				FileAppend, % this.errors[A_index] "`n", *
+				FileAppend, % this.options.indent this.errors[A_index] "`n", *
 			}
 
 			if (!this.errors.MaxIndex()) {
-				FileAppend, % this.describe " - OK`n", *
+				FileAppend, % this.options.indent this.describe " - OK`n", *
 			}
 
 			if (this.errors.MaxIndex() && this.options.abortOnError) {
@@ -105,20 +109,22 @@ class AhkUnit
 		}
 
 		_logError(condition, expected, actual) {
-			msg := format("{1}: {2}:`n    Actual:   {3}`n    Expected: {4}"
+			msg := format("{2}: {3}:`n{1}{1}Actual:{4}`n{1}{1}Expected: {5}"
 				, this.describe, this.it, actual, expected)
 			this._log(condition, msg)
 		}
 
 		_logErrorString(condition, expected, actual) {
-			msg := format("{1}: {2}:`n    Actual:   ""{3}""`n    Expected: ""{4}"""
-				, this.describe, this.it, actual, expected)
+			msg := format("{2}: {3}:`n{1}{1}Actual:   ""{4}""`n{1}{1}Expected: ""{5}"""
+				, this.options.indent, this.describe, this.it, actual, expected)
 			this._log(condition, msg)
 		}
 
 		_logErrorMultiLine(condition, expected, actual) {
-			msg := format("{1}: {2}:`nActual/Expected:`n""{3}""`n`n""{4}"""
-				, this.describe, this.it, actual, expected)
+			expectedIndented := RegexReplace(expected, "`am)^(.+)$", format("{1}{1}{1}$1", this.options.indent))
+			actualIndented   := RegexReplace(actual, "`am)^(.+)$", format("{1}{1}{1}$1", this.options.indent))
+			msg := format("{2}: {3}:`n{1}{1}Actual/Expected:`n`n{4}`n`n{5}"
+				, this.options.indent, this.describe, this.it, actualIndented, expectedIndented)
 			this._log(condition, msg)
 		}
 
@@ -154,14 +160,14 @@ class AhkUnit
 		}
 
 		toThrow() {
-			throwError := false
+			didThrow := false
 			try {
 				this.value.call()
 			} catch error {
-				throwError := true
+				didThrow := true
 			}
 
-			this._logError(throwError == true, "Throw error", "Didn't throw error")
+			this._logError(didThrow == true, "Throw error", "Didn't throw error")
 			return this.it
 		}
 
