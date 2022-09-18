@@ -15,6 +15,12 @@ class AhkUnit
 		%bE%(this)
 	}
 
+	_afterEach() {
+		a := this.__Class
+		aE := %a%.afterEach
+		%aE%(this)
+	}
+
 	describe(describe1) {
 		return new AhkUnit._Describe(this.options, describe1)
 	}
@@ -23,11 +29,19 @@ class AhkUnit
 		a := this.__Class
 		for k, v in %a%
 		{
-			if (IsObject(v) && IsFunc(v) && k != "__Init" && k != "beforeEach") {
+			; if (IsObject(v) && IsFunc(v) && k != "__Init" && k != "beforeEach") {
+			if (IsObject(v) && IsFunc(v) && this._isTestMethod(k)) {
+				; OutputDebug, % k "`n"
 				this._beforeEach()
 				%v%(this)
+				this._afterEach()
 			}
 		}
+	}
+
+	_isTestMethod(name) {
+		ret := RegExMatch(name, "i)(^beforeEach$|^_)")
+		return !!!ret
 	}
 
 	class _Describe {
