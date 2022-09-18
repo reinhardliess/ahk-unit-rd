@@ -101,16 +101,48 @@ class AhkUnit
 			return true
 		}
 
+		; adapted from https://github.com/biga-ahk/biga.ahk
+		_print(values*) {
+			for key, value in values {
+				out .= (IsObject(value) ? this._internal_stringify(value) : value)
+			}
+			return out
+		}
+
+		_internal_stringify(param_value) {
+			if (!isObject(param_value)) {
+				return """" param_value """"
+			}
+			for key, value in param_value {
+				if key is not Number
+				{
+					output .= """" . key . """:"
+				} else {
+					output .= key . ":"
+				}
+				if (isObject(value)) {
+					output .= "[" . this._internal_stringify(value) . "]"
+				} else if value is not number
+				{
+					output .= """" . value . """"
+				} else {
+					output .= value
+				}
+				output .= ", "
+			}
+			return subStr(output, 1, -2)
+		}
+
+
 		_isNumber(variable) {
 			if variable is number
 				return true
-			else
-				return false
+			return false
 		}
 
 		_logError(condition, expected, actual) {
-			msg := format("{2}: {3}:`n{1}{1}Actual:{4}`n{1}{1}Expected: {5}"
-				, this.describe, this.it, actual, expected)
+			msg := format("{2}: {3}:`n{1}{1}Actual:   {4}`n{1}{1}Expected: {5}"
+				, this.options.indent, this.describe, this.it, actual, expected)
 			this._log(condition, msg)
 		}
 
@@ -140,22 +172,25 @@ class AhkUnit
 		}
 
 		toEqual(value) {
-			msg := % this.describe " - " this.it ": expected obj1 and received obj2"
+			if (!IsObject(value)) {
+				return this.toBe(value)
+			}
+
+			actual := this._print(this.value)
+			expected := this._print(value)
 			e1 := this._toEqual(value, this.value)
 			e2 := this._toEqual(this.value, value)
-			this._log(e1 && e2, msg)
+			this._logError(e1 && e2, expected, actual)
 			return this.it
 		}
 
 		toBeTrue() {
-			msg := % this.describe " - " this.it ": expected true and received " (this.value ? "true" : "false")
-			this._log(this.value == true, msg)
+			this._logError(true = this.value, "True", this.value = false ? "False" : this.value)
 			return this.it
 		}
 
 		toBeFalse() {
-			msg := % this.describe " - " this.it ": expected false and received " (this.value ? "true" : "false")
-			this._log(this.value == false, msg)
+			this._logError(false = this.value, "False", this.value = true ? "True" : this.value)
 			return this.it
 		}
 
@@ -172,13 +207,13 @@ class AhkUnit
 		}
 
 		toBeGreaterThan(value) {
-			msg := % this.describe " - " this.it ":  expected " value " to be greater than " this.value
+			msg := % this.describe " - " this.it ": expected " this.value " to be greater than " value
 			this._log(this.value > value, msg)
 			return this.it
 		}
 
 		toBeLessThan(value) {
-			msg := % this.describe " - " this.it ": expected " value " to be less than " this.value
+			msg := % this.describe " - " this.it ": expected " this.value " to be less than " value
 			this._log(this.value < value, msg)
 			return this.it
 		}
@@ -190,13 +225,13 @@ class AhkUnit
 		}
 
 		toContain(value) {
-			msg := % this.describe " - " this.it ": expected " this.value " to contain " value
+			msg := % this.describe " - " this.it ": expected " """" this.value """" " to contain " """" value """"
 			this._log(InStr(this.value, value), msg)
 			return this.it
 		}
 
 		toMatch(value) {
-			msg := % this.describe " - " this.it ": expected " this.value " to match " value
+			msg := % this.describe " - " this.it ": expected " """" this.value """" " to match " """" value """"
 			this._log(RegExMatch(this.value, value), msg)
 			return this.it
 		}
