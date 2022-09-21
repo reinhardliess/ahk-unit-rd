@@ -1,24 +1,12 @@
-class AhkUnit
+﻿class AhkUnit
 {
 	__New(options := "") {
 		this.options := IsObject(options) ? options : {}
 		this.options.indent := this.options.hasKey("indent")
 			? this.options.indent
 			: "  "
-		FileAppend, % "Class " this.__Class "`n", *
+		FileAppend, % "Class " this.__Class "`n", *, UTF-8
 		this._test()
-	}
-
-	_beforeEach() {
-		a := this.__Class
-		bE := %a%.beforeEach
-		%bE%(this)
-	}
-
-	_afterEach() {
-		a := this.__Class
-		aE := %a%.afterEach
-		%aE%(this)
 	}
 
 	describe(describe1) {
@@ -27,20 +15,19 @@ class AhkUnit
 
 	_test() {
 		a := this.__Class
-		for k, v in %a%
-		{
-			; if (IsObject(v) && IsFunc(v) && k != "__Init" && k != "beforeEach") {
+		this.beforeClass()
+		for k, v in %a% {
 			if (IsObject(v) && IsFunc(v) && this._isTestMethod(k)) {
-				; OutputDebug, % k "`n"
-				this._beforeEach()
+				this.beforeEach()
 				%v%(this)
-				this._afterEach()
+				this.afterEach()
 			}
 		}
+		this.afterClass()
 	}
 
 	_isTestMethod(name) {
-		ret := RegExMatch(name, "i)(^beforeEach$|^_)")
+		ret := RegExMatch(name, "i)(^beforeClass$|^afterClass$|^beforeEach$|^afterEach$|^_)")
 		return !!!ret
 	}
 

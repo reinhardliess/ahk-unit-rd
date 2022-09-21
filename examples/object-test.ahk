@@ -2,9 +2,20 @@ class MyObjectTest extends AhkUnit {
 
 	beforeEach() {
 		this.myObj := new MyObject(100, 200)
+		; OutputDebug, beforeEach`n
 	}
 
+	afterEach() {
+		; OutputDebug, afterEach`n
+	}
 
+	beforeClass() {
+		; OutputDebug, beforeClass`n
+	}
+
+	afterClass() {
+		; OutputDebug, afterClass`n
+	}
 
 	myTest1() {
 		d := this.describe("MyObject")
