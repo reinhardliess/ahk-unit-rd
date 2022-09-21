@@ -42,7 +42,7 @@ class MyObjectTest extends AhkUnit {
 
 		;toBeLessThan(value) is x < value
 		x := 100
-		d.it("x should be less than 100").expect(x).toBeLessThan(99)
+		d.it("x should be less than 99").expect(x).toBeLessThan(99)
 
 		;toBeGreaterThan(value) is x > value
 		x := 100
