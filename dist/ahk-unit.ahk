@@ -53,11 +53,12 @@ class AhkUnit
 
 		__Delete() {
 			loop, % this.errors.MaxIndex() {
-				FileAppend, % this.options.indent this.errors[A_index] "`n", *
+				FileAppend, % this.options.indent "❌ " this.errors[A_index] "`n", *, UTF-8
 			}
 
 			if (!this.errors.MaxIndex()) {
-				FileAppend, % this.options.indent this.describe " - OK`n", *
+				; FileAppend, % this.options.indent this.describe " - OK`n", *, UTF-8
+				FileAppend, % this.options.indent "✔️ " this.describe "`n", *, UTF-8
 			}
 
 			if (this.errors.MaxIndex() && this.options.abortOnError) {
