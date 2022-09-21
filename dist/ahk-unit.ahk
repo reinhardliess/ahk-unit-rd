@@ -83,7 +83,7 @@
 
 		_log(pass, msg) {
 			if (!pass) {
-				this.errors.Insert(msg)
+				this.errors.Insert(msg "`n")
 			}
 		}
 
@@ -143,13 +143,13 @@
 		}
 
 		_logError(condition, expected, actual) {
-			msg := format("{2}: {3}:`n{1}{1}Actual:   {4}`n{1}{1}Expected: {5}"
+			msg := format("{2}: {3}:`n`n{1}{1}  Actual:   {4}`n{1}{1}  Expected: {5}"
 				, this.options.indent, this.describe, this.it, actual, expected)
 			this._log(condition, msg)
 		}
 
 		_logErrorString(condition, expected, actual) {
-			msg := format("{2}: {3}:`n{1}{1}Actual:   ""{4}""`n{1}{1}Expected: ""{5}"""
+			msg := format("{2}: {3}:`n`n{1}{1}  Actual:   ""{4}""`n{1}{1}  Expected: ""{5}"""
 				, this.options.indent, this.describe, this.it, actual, expected)
 			this._log(condition, msg)
 		}
@@ -157,7 +157,7 @@
 		_logErrorMultiLine(condition, expected, actual) {
 			expectedIndented := RegexReplace(expected, "`am)^(.+)$", format("{1}{1}{1}$1", this.options.indent))
 			actualIndented   := RegexReplace(actual, "`am)^(.+)$", format("{1}{1}{1}$1", this.options.indent))
-			msg := format("{2}: {3}:`n{1}{1}Actual/Expected:`n`n{4}`n`n{5}"
+			msg := format("{2}: {3}:`n`n  {1}{1}Actual/Expected:`n`n{4}`n`n{5}"
 				, this.options.indent, this.describe, this.it, actualIndented, expectedIndented)
 			this._log(condition, msg)
 		}
@@ -209,33 +209,29 @@
 		}
 
 		toBeGreaterThan(value) {
-			msg := % this.describe " - " this.it ": expected " this.value " to be greater than " value
-			this._log(this.value > value, msg)
+			this._logError(this.value > value, "> " value, this.value)
 			return this.it
 		}
 
 		toBeLessThan(value) {
-			msg := % this.describe " - " this.it ": expected " this.value " to be less than " value
-			this._log(this.value < value, msg)
+			this._logError(this.value < value, "< " value, this.value)
 			return this.it
 		}
 
 		toBeDefined() {
-			msg := % this.describe " - " this.it ": expected to be defined"
-			this._log(this.value != "", msg)
+			this._logError(this.value != "", "Defined", "Undefined")
 			return this.it
 		}
 
 		toContain(value) {
-			msg := % this.describe " - " this.it ": expected " """" this.value """" " to contain " """" value """"
-			this._log(InStr(this.value, value), msg)
+			this._logError(InStr(this.value, value), format("Should contain ""{1}""", value), format("""{1}""", this.value))
 			return this.it
 		}
 
 		toMatch(value) {
-			msg := % this.describe " - " this.it ": expected " """" this.value """" " to match " """" value """"
-			this._log(RegExMatch(this.value, value), msg)
+			this._logError(RegExMatch(this.value, value), format("Should match ""{1}""", value), format("""{1}""", this.value))
 			return this.it
 		}
-	}
+
+ }
 }
